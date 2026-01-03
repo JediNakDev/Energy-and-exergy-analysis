@@ -1,45 +1,74 @@
-from powerdata import NoPCM,P1,P2,P3,P4,P5,P6,P7,M12,M13,M24,M26,M35,M36,M37
+"""
+Power output graph for PV panel simulations.
+
+Plots power density profiles comparing PV-PCM and conventional PV systems.
+"""
+
+# =============================================================================
+# Imports
+# =============================================================================
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from datetime import datetime
-x = []
-for i in range(150,570):
-    time=datetime(2022,3,1,i//30,(i%30)*2)
-    x.append(time)
-dP1=[]
-dP2=[]
-dP3=[]
-dP4=[]
-dP5=[]
-dP6=[]
-dP7=[]
-dP12=[]
-for i in range(420):
-    dP1.append(P1[i]-NoPCM[i])
-    dP2.append(P2[i]-NoPCM[i])
-    dP3.append(P3[i]-NoPCM[i])
-    dP4.append(P4[i]-NoPCM[i])
-    dP5.append(P5[i]-NoPCM[i])
-    dP6.append(P6[i]-NoPCM[i])
-    dP7.append(P7[i]-NoPCM[i])
-    dP12.append(M12[i]-NoPCM[i])
-ax = plt.subplot()
-ax.plot_date(x, P1,'k',xdate=True)
-ax.plot_date(x, NoPCM,'k-.',xdate=True)
-# ax.plot_date(x, dP1,'k',xdate=True)
-# ax.plot_date(x, dP2,'k',dashes=[1,1.5],xdate=True)
-# ax.plot_date(x, dP3,'k',dashes=[4, 1],xdate=True)
-# ax.plot_date(x, dP4,'k-.',xdate=True)
-# ax.plot_date(x, dP5,'gray',xdate=True)
-# ax.plot_date(x, dP6,'gray',dashes=[1,1.5],xdate=True)
-# ax.plot_date(x, dP7,'gray',dashes=[4, 1],xdate=True)
-ax.set_ylabel('Power area density [W/$m^{2}$]',fontsize='36')
-ax.set_xlabel('Time',fontsize='36')
-ax.tick_params(axis='both', which='major', labelsize=32)
-myFmt = mdates.DateFormatter('%H:%M')
-ax.xaxis.set_major_formatter(myFmt)
-# plt.legend(['Paraffin Wax','Sodium Sulfate Decahydrate','Polyethylene Glycol','Calcium Chloride Hexahydrate','Octadecane','Lauric Acid','Capric Acid'],loc='upper right',fontsize=14)
-plt.ylim(0,250)
-# plt.legend(['PV-PCM','Conventional PV'],loc='upper right',fontsize='36')
-plt.grid(True,alpha=0.5)
-plt.show()
+
+from powerdata import NoPCM, P1, P2, P3, P4, P5, P6, P7, M12, M13, M24, M26, M35, M36, M37
+
+
+# =============================================================================
+# Configuration
+# =============================================================================
+FONT_SIZE_LABELS = 36
+FONT_SIZE_TICKS = 32
+TIME_START = 150
+TIME_END = 570
+
+
+# =============================================================================
+# Main Execution
+# =============================================================================
+if __name__ == "__main__":
+    # Generate time axis
+    time_points = []
+    for i in range(TIME_START, TIME_END):
+        time = datetime(2022, 3, 1, i // 30, (i % 30) * 2)
+        time_points.append(time)
+    
+    # Calculate power differences from conventional PV
+    dP1 = [P1[i] - NoPCM[i] for i in range(420)]
+    dP2 = [P2[i] - NoPCM[i] for i in range(420)]
+    dP3 = [P3[i] - NoPCM[i] for i in range(420)]
+    dP4 = [P4[i] - NoPCM[i] for i in range(420)]
+    dP5 = [P5[i] - NoPCM[i] for i in range(420)]
+    dP6 = [P6[i] - NoPCM[i] for i in range(420)]
+    dP7 = [P7[i] - NoPCM[i] for i in range(420)]
+    dP12 = [M12[i] - NoPCM[i] for i in range(420)]
+    
+    # Create plot
+    fig, ax = plt.subplots()
+    
+    # Plot power profiles
+    ax.plot_date(time_points, P1, 'k', xdate=True)
+    ax.plot_date(time_points, NoPCM, 'k-.', xdate=True)
+    
+    # Alternative plots (commented out for reference)
+    # ax.plot_date(time_points, dP1, 'k', xdate=True)
+    # ax.plot_date(time_points, dP2, 'k', dashes=[1, 1.5], xdate=True)
+    # ax.plot_date(time_points, dP3, 'k', dashes=[4, 1], xdate=True)
+    # ax.plot_date(time_points, dP4, 'k-.', xdate=True)
+    # ax.plot_date(time_points, dP5, 'gray', xdate=True)
+    # ax.plot_date(time_points, dP6, 'gray', dashes=[1, 1.5], xdate=True)
+    # ax.plot_date(time_points, dP7, 'gray', dashes=[4, 1], xdate=True)
+    
+    # Labels and formatting
+    ax.set_ylabel('Power area density [W/$m^{2}$]', fontsize=FONT_SIZE_LABELS)
+    ax.set_xlabel('Time', fontsize=FONT_SIZE_LABELS)
+    ax.tick_params(axis='both', which='major', labelsize=FONT_SIZE_TICKS)
+    
+    # Time format
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M'))
+    
+    # Limits and grid
+    plt.ylim(0, 250)
+    plt.grid(True, alpha=0.5)
+    
+    plt.show()

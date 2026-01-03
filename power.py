@@ -1,48 +1,95 @@
+"""
+Solar PV power calculation module.
+
+Calculates current-voltage characteristics and maximum power point
+for photovoltaic panels based on the single-diode model.
+"""
+
+# =============================================================================
+# Imports
+# =============================================================================
+from typing import List
 import numpy as np
 
-def findI(v,T,G):
+from constants import (
+    BOLTZMANN, ELECTRON_CHARGE,
+    G_REF, T_REF, E_G, K_I,
+    I_SC, V_OC, N_S, N_IDEALITY
+)
 
 
-    k=1.380649e-23
-    G_ref=1000
-    T_ref=298.13
-    q=1.60217663e-19
-    E_g=1.1
-    k_i=0.005254
-
-    i_sc=9.06
-    v_oc=46.22
-    N_s=72
-    n=1.3
+# =============================================================================
+# Functions
+# =============================================================================
+def findI(v: List[float], T: List[float], G: List[float]) -> List[List[float]]:
+    """
+    Calculate current for given voltage, temperature, and irradiance.
     
-    i_rs=[]
-    i_o=[]
-    i_ph=[]
-    i=[]
+    Uses the single-diode model for photovoltaic cells.
+    
+    Args:
+        v: Voltage array [V]
+        T: Temperature list [K]
+        G: Irradiance list [W/m²]
+    
+    Returns:
+        List of current arrays for each temperature/irradiance pair
+    """
+    i_list = []
+    
     for j in range(len(T)):
-        t=T[j]
-        g=G[j]
-        i_rs.append(i_sc/(np.exp((q*v_oc)/(n*N_s*k*t))-1))
-        i_o.append(i_rs[j]*((t/T_ref)**3)*np.exp(((q*E_g)/(n*k))*((1/T_ref)-(1/t))))
-        i_ph.append((i_sc+k_i*(t-T_ref))*(g/G_ref))
-   
-        i.append(i_ph[j]-i_o[j]*(np.exp((q*(v)/(n*k*N_s*t)))-1))
-                
-    return i
+        t = T[j]
+        g = G[j]
+        
+        # Reverse saturation current at reference
+        i_rs = I_SC / (np.exp((ELECTRON_CHARGE * V_OC) / (N_IDEALITY * N_S * BOLTZMANN * t)) - 1)
+        
+        # Dark saturation current (temperature adjusted)
+        i_o = i_rs * ((t / T_REF) ** 3) * np.exp(
+            ((ELECTRON_CHARGE * E_G) / (N_IDEALITY * BOLTZMANN)) * ((1 / T_REF) - (1 / t))
+        )
+        
+        # Photogenerated current
+        i_ph = (I_SC + K_I * (t - T_REF)) * (g / G_REF)
+        
+        # Output current (single-diode equation)
+        i = i_ph - i_o * (np.exp((ELECTRON_CHARGE * v) / (N_IDEALITY * BOLTZMANN * N_S * t)) - 1)
+        i_list.append(i)
+    
+    return i_list
 
-def findP(i,v):
-    p=0
+
+def findP(i: List[float], v: List[float]) -> float:
+    """
+    Find maximum power point from I-V curve.
+    
+    Args:
+        i: Current array [A]
+        v: Voltage array [V]
+    
+    Returns:
+        Maximum power [W]
+    """
+    p_max = 0
     for j in range(len(i)):
-        if p < i[j]*v[j]:
-            p=i[j]*v[j]
-    return p
+        p = i[j] * v[j]
+        if p > p_max:
+            p_max = p
+    return p_max
 
-def power(T,G):
-    V=np.arange(-5,46.22,0.1)
-    I=findI(V,T,G)
-    P=[]
-    for item in I:
-        p=findP(item,V)
-        P.append(p)
 
-    return P
+def power(T: List[float], G: List[float]) -> List[float]:
+    """
+    Calculate maximum power for each temperature/irradiance condition.
+    
+    Args:
+        T: Temperature list [K]
+        G: Irradiance list [W/m²]
+    
+    Returns:
+        List of maximum power values [W]
+    """
+    V = np.arange(-5, V_OC, 0.1)
+    I = findI(V, T, G)
+    
+    return [findP(current, V) for current in I]
