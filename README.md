@@ -82,7 +82,7 @@ Energy-and-exergy-analysis/
 
 ```bash
 # Clone the repository
-git clone <repository-url>
+git clone https://github.com/JediNakDev/Energy-and-exergy-analysis.git
 cd Energy-and-exergy-analysis
 
 # Install dependencies
@@ -168,7 +168,7 @@ If you use this code in your research, please cite:
 
 ## License
 
-This project is for academic and research purposes.
+This project is licensed under the [MIT License](LICENSE).
 
 ## Contact
 
